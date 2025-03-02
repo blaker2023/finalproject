@@ -1,0 +1,57 @@
+{
+    "Brand": {
+        "Kia": 0,
+        "Chevrolet": 1,
+        "Mercedes": 2,
+        "Audi": 3,
+        "Volkswagen": 4,
+        "Toyota": 5,
+        "Honda": 6,
+        "BMW": 7,
+        "Hyundai": 8,
+        "Ford": 9
+    },
+    "Model": {
+        "Rio": 0,
+        "Malibu": 1,
+        "GLA": 2,
+        "Q5": 3,
+        "Golf": 4,
+        "Camry": 5,
+        "Civic": 6,
+        "Sportage": 7,
+        "RAV4": 8,
+        "5 Series": 9,
+        "CR-V": 10,
+        "Elantra": 11,
+        "Tiguan": 12,
+        "Equinox": 13,
+        "Explorer": 14,
+        "A3": 15,
+        "3 Series": 16,
+        "Tucson": 17,
+        "Passat": 18,
+        "Impala": 19,
+        "Corolla": 20,
+        "Optima": 21,
+        "Fiesta": 22,
+        "A4": 23,
+        "Focus": 24,
+        "E-Class": 25,
+        "Sonata": 26,
+        "C-Class": 27,
+        "X5": 28,
+        "Accord": 29
+    },
+    "Fuel_Type": {
+        "Diesel": 0,
+        "Hybrid": 1,
+        "Electric": 2,
+        "Petrol": 3
+    },
+    "Transmission": {
+        "Manual": 0,
+        "Automatic": 1,
+        "Semi-Automatic": 2
+    }
+}

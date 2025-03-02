@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Price Prediction</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        form { display: inline-block; text-align: left; }
+        input, select { margin: 5px; padding: 5px; width: 100%; }
+        button { background-color: blue; color: white; padding: 8px 12px; border: none; cursor: pointer; }
+        table { margin: 10px auto; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 5px; }
+    </style>
+</head>
+<body>
+
+    <h1>Car Price Prediction</h1>
+
+    <form action="/predict" method="post">
+        <label>Brand: </label>
+        <select name="Brand">
+            {% for key, value in mappings['Brand'].items() %}
+            <option value="{{ value }}">{{ key }}</option>
+            {% endfor %}
+        </select><br>
+
+        <label>Model: </label>
+        <select name="Model">
+            {% for key, value in mappings['Model'].items() %}
+            <option value="{{ value }}">{{ key }}</option>
+            {% endfor %}
+        </select><br>
+
+        <label>Year: </label>
+        <input type="number" name="Year" required><br>
+
+        <label>Engine Size: </label>
+        <input type="number" step="0.1" name="Engine_Size" required><br>
+
+        <label>Fuel Type: </label>
+        <select name="Fuel_Type">
+            {% for key, value in mappings['Fuel_Type'].items() %}
+            <option value="{{ value }}">{{ key }}</option>
+            {% endfor %}
+        </select><br>
+
+        <label>Transmission: </label>
+        <select name="Transmission">
+            {% for key, value in mappings['Transmission'].items() %}
+            <option value="{{ value }}">{{ key }}</option>
+            {% endfor %}
+        </select><br>
+
+        <label>Mileage: </label>
+        <input type="number" name="Mileage" required><br>
+
+        <label>Doors: </label>
+        <input type="number" name="Doors" required><br>
+
+        <label>Owner Count: </label>
+        <input type="number" name="Owner_Count" required><br>
+
+        <button type="submit">Predict Price</button>
+    </form>
+
+    {% if prediction %}
+    <h2>Estimated Price: ${{ prediction }}</h2>
+    {% endif %}
+
+    <h2>Feature Encoding Reference</h2>
+    <table>
+        <tr><th>Feature</th><th>Code</th><th>Meaning</th></tr>
+        {% for key, value in mappings['Brand'].items() %}
+        <tr><td>Brand</td><td>{{ value }}</td><td>{{ key }}</td></tr>
+        {% endfor %}
+        {% for key, value in mappings['Fuel_Type'].items() %}
+        <tr><td>Fuel Type</td><td>{{ value }}</td><td>{{ key }}</td></tr>
+        {% endfor %}
+        {% for key, value in mappings['Transmission'].items() %}
+        <tr><td>Transmission</td><td>{{ value }}</td><td>{{ key }}</td></tr>
+        {% endfor %}
+    </table>
+
+</body>
+</html>
