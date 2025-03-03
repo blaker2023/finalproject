@@ -2,12 +2,9 @@ Flask
 gunicorn
 numpy
 pandas
-xgboost
+xgboost==1.6.2
 joblib
 requests
-scikit-learn
 Werkzeug
-PyYAML
-python-dateutil
-pytz
 urllib3
+python-dateutil
