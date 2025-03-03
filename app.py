@@ -1,26 +1,32 @@
 from flask import Flask, render_template, request, jsonify
 import json
 import pandas as pd
-import xgboost as xgb
+import pickle  # Using pickle for model loading
 import os
+import xgboost as xgb  # Ensure XGBoost is imported
 
 # Initialize Flask app
 app = Flask(__name__)
 
-# ✅ Define model file path
-MODEL_PATH = "car_price_xgboost.json"
+# ✅ Define model file paths
+MODEL_PATH_PKL = "best_xgboost_model.pkl"
+MODEL_PATH_JSON = "best_xgboost_model.json"
 
-# ✅ Load the trained model (XGBoost JSON format)
+# ✅ Load the trained model (Handle both pickle & XGBoost Booster formats)
+model = None
 try:
-    if os.path.exists(MODEL_PATH):
+    if os.path.exists(MODEL_PATH_PKL):
+        print("✅ Loading model from pickle .pkl file...")
+        with open(MODEL_PATH_PKL, "rb") as f:
+            model = pickle.load(f)  # Load scikit-learn compatible model
+    elif os.path.exists(MODEL_PATH_JSON):
         print("✅ Loading model from XGBoost JSON file...")
-        model = xgb.XGBRegressor()
-        model.load_model(MODEL_PATH)  # Use XGBoost's native load_model method
+        model = xgb.Booster()
+        model.load_model(MODEL_PATH_JSON)  # Load Booster model
     else:
-        raise FileNotFoundError(f"⚠️ Model file '{MODEL_PATH}' not found!")
+        raise FileNotFoundError("⚠️ Model file not found! Please train and save the model.")
 except Exception as e:
     print(f"❌ Error loading model: {e}")
-    model = None  # Handle missing model gracefully
 
 # ✅ Load category mappings
 CATEGORY_MAPPING_PATH = "category_mappings.json"
@@ -41,7 +47,7 @@ def home():
 def predict():
     """Handle car price predictions."""
     if model is None:
-        return jsonify({"error": "Model file not found. Ensure 'car_price_xgboost.json' exists."})
+        return jsonify({"error": "Model file not found. Ensure 'best_xgboost_model.pkl' or 'best_xgboost_model.json' exists."})
 
     try:
         # Get input data from form
@@ -61,13 +67,18 @@ def predict():
         df = pd.DataFrame([data])
 
         # ✅ Ensure correct feature order before prediction
-        expected_features = model.feature_names_in_  # Get expected feature names from the model
-        df = df[expected_features]  # Align input features with model
+        if hasattr(model, "feature_names_in_"):  # If using XGBRegressor or XGBClassifier
+            expected_features = model.feature_names_in_
+            df = df[expected_features]  # Align input features with model
+            prediction = model.predict(df)
 
-        # Make prediction
-        prediction = model.predict(df)
+        elif isinstance(model, xgb.Booster):  # If using XGBoost Booster
+            prediction = model.predict(xgb.DMatrix(df))  # Convert to DMatrix for Booster model
 
-        return render_template("index.html", prediction=round(prediction[0], 2), mappings=category_mappings)
+        else:
+            return jsonify({"error": "Model type not recognized. Ensure correct training and saving."})
+
+        return render_template("index.html", prediction=round(float(prediction[0]), 2), mappings=category_mappings)
 
     except Exception as e:
         print(f"❌ Prediction Error: {e}")
