@@ -1,20 +1,21 @@
 from flask import Flask, render_template, request, jsonify
 import json
 import pandas as pd
-import joblib
+import xgboost as xgb
 import os
 
 # Initialize Flask app
 app = Flask(__name__)
 
 # ✅ Define model file path
-MODEL_PATH = "car_price_xgboost.pkl"
+MODEL_PATH = "car_price_xgboost.json"
 
-# ✅ Load the trained model
+# ✅ Load the trained model (XGBoost JSON format)
 try:
     if os.path.exists(MODEL_PATH):
-        print("✅ Loading model from joblib .pkl file...")
-        model = joblib.load(MODEL_PATH)  # Use joblib for .pkl models
+        print("✅ Loading model from XGBoost JSON file...")
+        model = xgb.XGBRegressor()
+        model.load_model(MODEL_PATH)  # Use XGBoost's native load_model method
     else:
         raise FileNotFoundError(f"⚠️ Model file '{MODEL_PATH}' not found!")
 except Exception as e:
@@ -40,7 +41,7 @@ def home():
 def predict():
     """Handle car price predictions."""
     if model is None:
-        return jsonify({"error": "Model file not found. Ensure 'car_price_xgboost.pkl' exists."})
+        return jsonify({"error": "Model file not found. Ensure 'car_price_xgboost.json' exists."})
 
     try:
         # Get input data from form
