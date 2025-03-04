@@ -1,30 +1,25 @@
 from flask import Flask, render_template, request, jsonify
 import json
 import pandas as pd
-import pickle  # Using pickle for model loading
 import os
 import xgboost as xgb  # Ensure XGBoost is imported
 
-# Initialize Flask app
+# ✅ Initialize Flask app
 app = Flask(__name__)
 
-# ✅ Define model file paths
-MODEL_PATH_PKL = "best_xgboost_model.pkl"
-MODEL_PATH_JSON = "best_xgboost_model.json"
+# ✅ Define model file path
+MODEL_PATH_JSON = "xgb_model_cpu.json"
 
-# ✅ Load the trained model (Handle both pickle & XGBoost Booster formats)
+# ✅ Load the trained XGBoost model
 model = None
 try:
-    if os.path.exists(MODEL_PATH_PKL):
-        print("✅ Loading model from pickle .pkl file...")
-        with open(MODEL_PATH_PKL, "rb") as f:
-            model = pickle.load(f)  # Load scikit-learn compatible model
-    elif os.path.exists(MODEL_PATH_JSON):
+    if os.path.exists(MODEL_PATH_JSON):
         print("✅ Loading model from XGBoost JSON file...")
-        model = xgb.Booster()
-        model.load_model(MODEL_PATH_JSON)  # Load Booster model
+        model = xgb.XGBRegressor()
+        model.load_model(MODEL_PATH_JSON)  # Load XGBRegressor model
+        model.set_params(tree_method="hist", gpu_id=-1)  # Ensure CPU-only mode
     else:
-        raise FileNotFoundError("⚠️ Model file not found! Please train and save the model.")
+        raise FileNotFoundError("⚠️ Model file not found! Ensure 'xgb_model_cpu.json' exists.")
 except Exception as e:
     print(f"❌ Error loading model: {e}")
 
@@ -47,10 +42,10 @@ def home():
 def predict():
     """Handle car price predictions."""
     if model is None:
-        return jsonify({"error": "Model file not found. Ensure 'best_xgboost_model.pkl' or 'best_xgboost_model.json' exists."})
+        return jsonify({"error": "Model file not found. Ensure 'xgb_model_cpu.json' exists."})
 
     try:
-        # Get input data from form
+        # ✅ Get input data from form
         data = {
             "Brand": int(request.form["Brand"]),
             "Model": int(request.form["Model"]),
@@ -63,17 +58,14 @@ def predict():
             "Owner_Count": int(request.form["Owner_Count"])
         }
 
-        # Convert input to DataFrame
+        # ✅ Convert input to DataFrame
         df = pd.DataFrame([data])
 
         # ✅ Ensure correct feature order before prediction
-        if hasattr(model, "feature_names_in_"):  # If using XGBRegressor or XGBClassifier
+        if hasattr(model, "feature_names_in_"):  # If using XGBRegressor
             expected_features = model.feature_names_in_
             df = df[expected_features]  # Align input features with model
             prediction = model.predict(df)
-
-        elif isinstance(model, xgb.Booster):  # If using XGBoost Booster
-            prediction = model.predict(xgb.DMatrix(df))  # Convert to DMatrix for Booster model
 
         else:
             return jsonify({"error": "Model type not recognized. Ensure correct training and saving."})
